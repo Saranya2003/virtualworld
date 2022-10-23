@@ -1,1 +1,0 @@
-# se-cyber-physical-system
