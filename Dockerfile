@@ -1,15 +1,25 @@
-FROM python:3.10
+FROM node:16.15.1
 
-ENV PYTHONUNBUFFERED=1
+# for caching optimisations
+COPY package*.json /
+RUN npm install
+# required to serve the react app on the live server
+RUN npm install -g serve
 
-WORKDIR /code
+COPY . /app
+WORKDIR /app
 
-COPY requirement.txt .
+# noop files for non python projects and local development
+RUN echo "#!/bin/bash" > /app/migrate.sh && chmod +x /app/migrate.sh
+RUN echo "#!/bin/bash" > /usr/local/bin/start && chmod +x /usr/local/bin/start
 
-RUN pip install -r requirement.txt
+ENV PATH=/node_modules/.bin:$PATH
+ENV PORT=80
+ENV HOST=0.0.0.0
+ENV BROWSER='none'
 
-COPY . .
+RUN npm run build
 
-EXPOSE 8000
+EXPOSE 80
 
-CMD ["python","manage.py","runserver"]
+CMD ["serve", "-s", "build", "-l", "80"]
